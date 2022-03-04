@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="unstyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <title>Timer2</title>
+</head>
+<body>
+    <style>
+        body{
+            font-family: 'DM Sans', sans-serif;
+        }
+        .grid{
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .grid-item{
+           /* padding: 20px; */
+           min-width:300px;
+           padding: 10px;
+        }
+        label{
+            color: #2980b9;
+            font-weight: 700;
+        }
+        .grid-item.clockface-wrapper{
+            padding: 0px;
+        }
+        input[type="color"] {
+            appearance: auto;
+            width: 50px;
+            height: 27px;
+            cursor: default;
+            box-sizing: border-box;
+            background-color: -internal-light-dark(rgb(239, 239, 239), rgb(59, 59, 59));
+            color: -internal-light-dark(black, white);
+            border-width: 1px;
+            border-style: solid;
+            border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+            border-image: initial;
+            padding: 1px 2px;
+
+        }
+        .singletask{
+            display: grid;
+            grid-template-columns: auto auto;
+            gap:20px;
+            border-bottom: 1px solid #2980b9;
+            
+        }
+        input, textarea{
+            border-bottom:1px solid #000;
+            margin: 10px 0;
+            min-width: 63px;
+        }
+
+        .grid-item a, input[ type="submit"]{
+            padding:5px 15px;
+            border-radius: 5px;
+            background-color: #2980b9;
+            border: 1px solid #2980b9;
+            margin: 20px 0;
+            color: #fff;
+            text-align: center;
+            max-width: 200px;
+            width:auto;
+
+        }
+        .grid-item a:hover{
+            border: 1px solid #2980b9;
+            background-color: #fff;
+            color: #2980b9;
+        }
+        .grid-controls{
+            display: grid;
+            grid-template-columns: auto auto;
+        }
+        h1{
+            font-weight: 700;
+            font-size: 50px;
+            color: #2980b9;
+            margin-top:30px;
+            margin-bottom: 50px;
+            padding-left:20px;
+            width: 100%;
+        }
+
+
+    </style>
+
+    <h1>ClockFace List</h1>
+    <div class="grid">
+        <div class="grid-item clockface-wrapper">
+            <div class="timer">
+
+            </div>
+        </div>
+        <div class="grid-item">
+            <form id="tasks">
+                <div id="people-container" class="people-container">
+                    <div class="singletask">
+                        <input id="task-start" name="1:id" type="hidden" value="1">
+                        <div class="task-field">
+                            <label for="task-start">Start time: </label>
+                            <input id="task-start" name="1:start" type="number" min="1" max="24" placeholder="0-24">
+                        </div>
+                        <div class="task-field">
+                            <label for="task-start">End time: </label>
+                            <input id="task-start" name="1:end" type="number" min="1" max="24" placeholder="0-24">
+                        </div>
+                        <div class="task-field">
+                            <label for="task-start">Color: </label>
+                            <input id="task-start" name="1:color" type="color" >
+                        </div>
+                        <div class="task-field">
+                            <label for="task-start">Radius: </label>
+                            <input id="task-start" name="1:radius" type="number" value="190" min="100" max="200" placeholder="80">
+                        </div>
+                        <div class="task-field">
+                            <label for="task-start">Name: </label>
+                            <input id="task-start" name="1:name" type="text" placeholder="Short name for task">
+                        </div>
+                        <div class="task-field">
+                            <label for="task-start">Description: </label><br/>
+                            <textarea id="task-start" name="1:description" type="text" rows="5" placeholder="Describe your event"></textarea>
+                        </div>
+                        <a href="javascript:;" id="remove-task" class="remove-task">Remove Task</a><br/>
+                    </div>
+
+                </div>
+                <div class="grid-controls">
+                    <a href="javascript:;" id="add-new-task" class="add-new-task">Add! new Task</a>
+                
+                    <input type="submit" value="Create Tasks">
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+<script>
+
+let clockWidth=600;
+let clockHeight=600;
+let clockCenterPos = 300;
+
+let radiusMainClock = 200;
+let radiusNumbers = 200;
+let radiusMain = 200;
+
+let clockGraphicsSprite;
+
+let app = new PIXI.Application({ width: 600, height: 600, antialias: true,backgroundColor: 0x2980b9 });
+
+var e = document.querySelector(".timer");
+//document.body.appendChild(app.view);
+e.appendChild(app.view);
+
+const clockGraphics = new PIXI.Graphics();
+
+clockGraphics.beginFill(0xFFFFFF);
+clockGraphics.lineStyle(2, 0x000000, 1);
+clockGraphics.drawCircle(clockCenterPos,clockCenterPos,300);
+clockGraphics.endFill();
+
+let rectClockRegion = new PIXI.Rectangle(0,0,clockWidth,clockWidth)
+var clockGraphicsTexture = app.renderer.generateTexture(clockGraphics,1, 2, rectClockRegion );
+clockGraphicsSprite = new PIXI.Sprite(clockGraphicsTexture);
+app.stage.addChild(clockGraphicsSprite);
+
+// clockGraphicsSprite.buttonMode = true;
+clockGraphicsSprite.interactive = true;
+clockGraphicsSprite.mask = clockGraphics;
+clockGraphicsSprite.on('touchstart', (event) => onClickClock(clockGraphicsSprite));
+
+
+
+const graphics = new PIXI.Graphics();
+// Rectangle
+graphics.beginFill(0x000000);
+graphics.lineStyle(2, 0xFF00FF, 1);
+// graphics.drawRect(50, 50, 100, 100);
+graphics.arc(clockCenterPos,clockCenterPos,200,0, Math.PI)
+graphics.endFill();
+sW = 1280;
+    sH = 768;
+var semicircle = new PIXI.Graphics();
+    semicircle.beginFill(0xff0000);
+    semicircle.lineStyle(2, 0xffffff, 1);
+    semicircle.arc(0, 0, 100, 0, Math.PI); // cx, cy, radius, startAngle, endAngle
+    semicircle.position = {x: 200, y: 200};
+    //app.stage.addChild(semicircle);
+
+let clockface = new PIXI.Graphics();
+
+clockface.lineStyle(2,0x000000, 1);
+
+drawClockNumber(1);
+drawClockNumber(2);
+drawClockNumber(3);
+drawClockNumber(4);
+drawClockNumber(5);
+drawClockNumber(6);
+drawClockNumber(7);
+drawClockNumber(8);
+drawClockNumber(9);
+drawClockNumber(10);
+drawClockNumber(11);
+drawClockNumber(12);
+
+app.renderer.render(clockface);
+app.stage.addChild(clockface);
+
+function drawClockNumber(clocknumber){
+    let text = new PIXI.Text(clocknumber,{fontFamily : 'Arial', fontSize: 24, fill : 0x000000, align : 'center'});
+
+    text.position.x = Math.cos(radians((30*clocknumber)-90))*240+clockCenterPos-(text.width/2);
+    text.position.y = Math.sin(radians((30*clocknumber)-90))*240+clockCenterPos-(text.height/2);
+    app.stage.addChild(text);
+    clockface.moveTo(clockCenterPos,clockCenterPos);
+    return clockface.lineTo(Math.cos(radians((30*clocknumber)-90))*200+clockCenterPos,Math.sin(radians((30*clocknumber)-90))*200+clockCenterPos);
+}
+
+// createTask(7,9, 0x00ff00, 190, name = "Plan for week ahead");
+// createTask(9,11, 0xFFFFFF, 190, name = "Clockface");
+// createTask(11,13, 0xFF00FF, 190, name = "Unity the beach");
+
+let jsonTasks = {
+                "Tasks":[
+                        {start: 7, end: 11, color: 0xFFFF00, radius: 190, name: "Plan", description: 'plan for the week ahead' }
+                    ]
+                }
+
+
+
+
+// jsonTasks["Tasks"].forEach((e) => {
+//         console.log(e);
+//         createTask(e);
+//     })
+
+
+
+let taskContainerLists = [];
+
+function removeAllTasks(){
+    //taskContainerLists = [];
+    if(taskContainerLists.length){
+        for(var k in taskContainerLists) {
+            if(taskContainerLists[k].parent){
+                taskContainerLists[k].parent.removeChild(taskContainerLists[k]);
+            }
+            
+            console.log(taskContainerLists);
+        }
+    }
+
+}
+
+
+// createTask({
+//     start: 7,
+//     end: 11,
+//     color: 0xFFFF00,
+//     radius: 190,
+//     name: "Plan",
+//     description: 'plan for the week ahead'
+// })
+
+// createTask({
+//     start: 1,
+//     end: 2,
+//     color: 0xFFFF00,
+//     radius: 190,
+//     name: "Plan",
+//     description: 'plan for the week ahead'
+// })
+
+// createTask({
+//     start: 5,
+//     end: 7,
+//     color: 0xFFFF00,
+//     radius: 190,
+//     name: "Plan",
+//     description: 'plan for the week ahead'
+// })
+
+//removeAllTasks();
+//removeAllTasks();
+
+function createTask(object){
+
+
+
+    //console.log(taskContainerLists);
+
+    let id = parseInt(object.id);
+    let start = parseInt(object.start);
+    let end = parseInt(object.end);
+    let color = PIXI.utils.string2hex(object.color);
+    let radius = object.radius;
+    let name = object.name;
+    let description = object.description;
+
+    const task = new PIXI.Graphics();
+    let startTime = radians((30*start)-90);
+    let endTime = radians((30*end)-90);
+    // Rectangle
+    task.beginFill(color);
+    task.alpha = 0.8
+    task.lineStyle(2, 0x2980b9, 1);
+    task.moveTo(clockCenterPos,clockCenterPos);
+    // graphics.drawRect(50, 50, 100, 100);
+    task.arc(clockCenterPos,clockCenterPos,radius,startTime, endTime, false);
+    task.lineTo(clockCenterPos,clockCenterPos);
+    task.endFill();
+    let rectregion = new PIXI.Rectangle(clockCenterPos-radiusMainClock,clockCenterPos-radiusMainClock,clockCenterPos*2,clockCenterPos*2)
+    var taskTexture = app.renderer.generateTexture(task,1, 2, rectregion );
+    var taskSprite = new PIXI.Sprite(taskTexture);
+    taskSprite.filters = [new PIXI.filters.FXAAFilter()];
+
+
+    for(var k in taskContainerLists) {
+        if(taskContainerLists[k].info.id == id){
+            //taskContainerLists[k].parent.removeChild(taskContainerLists[k]);
+            //console.log(taskContainerLists[k].info.id);
+        }     
+    }
+
+    
+    let containerTask = new PIXI.Container();
+
+    containerTask.buttonMode = true;
+    containerTask.interactive = true;
+    containerTask.mask = task;
+    let textTask = new PIXI.Text(name,{wordWrapWidth: 90, lineHeight: 16, "textBaseline": "middle", fill: 0x2980b9, stroke: "#000", "padding": 8, wordWrap: true, "align": "left", fontFamily : 'Arial', fontSize: 16});
+    textTask.anchor.set(0.0,0.5);
+    if(start<6){
+        textTask.position.x = Math.cos(radians((30*(start+end)/2)-90))*80+radiusMainClock;
+    textTask.position.y = Math.sin(radians((30*(start+end)/2)-90))*80+radiusMainClock;
+        textTask.rotation = radians((30*(start+end)/2)-90);
+        
+    }else{
+
+        textTask.position.x = Math.cos(radians((30*(start+end)/2)-90))*140+radiusMainClock;
+        textTask.position.y = Math.sin(radians((30*(start+end)/2)-90))*140+radiusMainClock;
+        textTask.rotation = radians((30*(start+end)/2)-270);
+    }
+   
+    // console.log(name+": " +start);
+    containerTask.info = {
+        'id' : id,
+        'name': name,
+        'description' : description
+    };
+
+    containerTask.addChild(taskSprite);
+    containerTask.addChild(textTask);
+    containerTask.position.x = (clockCenterPos-radiusMainClock);
+    containerTask.position.y = (clockCenterPos-radiusMainClock);
+    app.stage.addChild(containerTask);
+
+    containerTask.on('pointerdown', (event) => onClick(event,containerTask));
+    containerTask.on('pointerover', (event) => onPointerOver(event,containerTask));
+    containerTask.on('pointerout', (event) => onPointerOut(event,containerTask));
+
+    taskContainerLists.push(containerTask);
+
+
+
+//console.log(taskContainerLists);
+
+
+
+}
+
+
+const style = new PIXI.TextStyle({
+    fontSize: 16,
+    align: "center",
+
+    wordWrap: true,
+    wordWrapWidth: 100
+});
+
+
+let texty = new PIXI.Text('', style);
+
+var tooltipbg = new PIXI.Graphics();
+
+tooltipbg.beginFill(0xFFFFFF);
+
+// set the line style to have a width of 5 and set the color to red
+tooltipbg.lineStyle(5, 0x000000);
+
+// draw a rectangle
+tooltipbg.drawRoundedRect(0, 0, 300, 200, 20);
+var tooltipbgTexture = app.renderer.generateTexture(tooltipbg);
+let txtBG = new PIXI.Sprite(tooltipbgTexture);
+txtBG.width = texty.width+50;
+txtBG.height = texty.height+50;
+
+let conTooltip = new PIXI.Container();
+
+
+//conTooltip.addChild(texty);
+//conTooltip.addChild(txtBG);
+
+app.stage.addChild(conTooltip);
+app.stage.interactive = true;
+app.stage.on("mousemove", moveText);
+
+function moveText(e){
+    conTooltip.addChild(texty);
+    
+    app.stage.removeChild(conTooltip);
+    app.stage.addChild(conTooltip);
+    
+    let pos = e.data.global;
+
+    conTooltip.x = pos.x - conTooltip.width/2;
+    conTooltip.y = pos.y-conTooltip.height-10;
+}
+
+
+
+function onPointerOver(e,object) {
+    conTooltip.addChild(texty);
+    conTooltip.addChild(txtBG);
+
+    app.stage.removeChild(object);
+    app.stage.addChild(object);
+
+    object.children[0].tint = 0x2980b9;
+    object.children[1].style = {
+                                    fontSize: 16,
+                                    align: "center",
+                                    fill: 0xFFFFFF,
+                                    wordWrap: true,
+                                    wordWrapWidth: 100
+                                };
+    texty.text = object.info.description;
+    txtBG.width = texty.width*2;
+    txtBG.height = texty.height*2;  
+    texty.anchor.set(-0.5,-0.5);
+}
+
+function radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
+
+function onPointerOut(e,object) {
+    conTooltip.removeChild(texty);
+    conTooltip.removeChild(txtBG);
+    object.children[0].tint = 0xFFFFFF;
+    object.children[1].style = {
+                                    fontSize: 16,
+                                    align: "center",
+                                    fill: 0x2980b9,
+                                    wordWrap: true,
+                                    wordWrapWidth: 100
+                                };
+    object.tint = 0xFFFFFF;
+    texty.text = "";
+}
+
+function onClick(e,object) {
+   
+    // console.log("Task Name: " + object.info.name);
+
+
+
+    app.stage.removeChild(object);
+    app.stage.addChild(object);
+
+    object.children[0].tint = 0x2980b9;
+    object.children[1].style = {
+                                    fontSize: 16,
+                                    align: "center",
+                                    fill: 0xFFFFFF,
+                                    wordWrap: true,
+                                    wordWrapWidth: 100
+                                };
+
+    conTooltip.addChild(txtBG);
+    conTooltip.addChild(texty);
+    app.stage.addChild(conTooltip);
+    
+    texty.text = object.info.description;
+    txtBG.width = texty.width*2;
+    txtBG.height = texty.height*2;  
+    texty.anchor.set(-0.5,-0.5);
+    let pos = e.data.global;
+
+    conTooltip.x = pos.x - conTooltip.width/2;
+    conTooltip.y = pos.y-conTooltip.height-10;
+}
+
+
+function onClickClock(obj){
+    console.log("asdfase")
+    app.stage.removeChild(conTooltip);
+}
+
+
+/*FORM 
+********************************/
+
+
+document.querySelector('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+//     var form = document.querySelector('form');
+// var data = serializeArray(form);
+// console.log(data);
+
+//   const formData = new FormData(e.target);
+// //   console.log(formData.get(name));
+// //   formData.forEach((fo) => {
+// //       console.log(fo);
+// //   })
+// var object = [];
+//   formData.forEach(function(value, key){
+//     object[key] = value;
+//     //console.log(key);
+
+// });
+//console.log(JSON.stringify(Object.fromEntries(formData)));
+
+const form = document.querySelector("form");
+const data = new FormData(form);
+
+
+const grouped = Array.from(data).reduce((m, e) => 
+  ((([g, k, v] = [...e[0].split(':'), e[1]]) =>  
+    (m[g] = Object.assign({}, m[g]))[k] = v)(), m), {}
+    );
+
+removeAllTasks();
+
+  for(var k in grouped) {
+//    console.log(k, grouped[k]);
+   createTask(grouped[k]);
+}
+
+//console.log(grouped);
+
+//createTask(grouped);
+// createTask({
+//     start: object[task[1][start]],
+//     end: 11,
+//     color: 0xFFFF00,
+//     radius: 190,
+//     name: "Plan",
+//     description: 'plan for the week ahead'
+// })
+  
+
+  // Now you can use formData.get('foo'), for example.
+  // Don't forget e.preventDefault() if you want to stop normal form .submission
+});
+
+
+let i = 2;
+document.getElementById('add-new-task').onclick = function () {
+    let template = 
+            `
+            
+            <input id="task-start" name="${i}:id" type="hidden" value="${i}">            
+            <div class="task-field">
+                <label for="task-start">Start time: </label>
+                <input id="task-start" name="${i}:start" type="number" min="1" max="24" placeholder="0-24">
+            </div>
+            <div class="task-field">
+                <label for="task-start">End time: </label>
+                <input id="task-start" name="${i}:end" type="number" min="1" max="24" placeholder="0-24">
+            </div>
+            <div class="task-field">
+                <label for="task-start">Color: </label>
+                <input id="task-start" name="${i}:color" type="color" >
+            </div>
+            <div class="task-field">
+                <label for="task-start">Radius: </label>
+                <input id="task-start" name="${i}:radius" type="number" value="190" min="100" max="200" placeholder="80">
+            </div>
+            <div class="task-field">
+                <label for="task-start">Name: </label>
+                <input id="task-start" name="${i}:name" type="text" placeholder="Short name for task">
+            </div>
+            <div class="task-field">
+                <label for="task-start">Description: </label><br/>
+                <textarea id="task-start" name="${i}:description" type="text" rows="5" placeholder="Describe your event"></textarea>
+            </div>
+            <a href="javascript:;" id="remove-task" class="remove-task">Remove Task</a><br/>
+            `;
+
+    let container = document.getElementById('people-container');
+    let div = document.createElement('div');
+    div.className = "singletask";
+    div.innerHTML = template;
+    container.appendChild(div);
+
+    i++;
+
+    document.querySelector('.remove-task').onclick = function (e) {
+        // let container = document.querySelector('.singletask:last-of-type');
+        // container.removeChild(container.lastChild())
+        // this.parentNode.removeChild(this.parentNode);
+        this.parentNode.parentNode.removeChild(this.parentNode);
+        console.log('lemon');
+    }
+
+
+}
+
+document.querySelector('.remove-task').onclick = function (e) {
+    // let container = document.querySelector('.singletask:last-of-type');
+    // container.removeChild(container.lastChild())
+    // this.parentNode.removeChild(this.parentNode);
+    this.parentNode.parentNode.removeChild(this.parentNode);
+    console.log('lemon');
+}
+
+// console.log(parseInt('#d30d0d', 16));
+
+var serializeArray = function (form) {
+	var arr = [];
+	Array.prototype.slice.call(form.elements).forEach(function (field) {
+		if (!field.name || field.disabled || ['file', 'reset', 'submit', 'button'].indexOf(field.type) > -1) return;
+		if (field.type === 'select-multiple') {
+			Array.prototype.slice.call(field.options).forEach(function (option) {
+				if (!option.selected) return;
+				arr.push({
+					name: field.name,
+					value: option.value
+				});
+			});
+			return;
+		}
+		if (['checkbox', 'radio'].indexOf(field.type) >-1 && !field.checked) return;
+		arr.push({
+			name: field.name,
+			value: field.value
+		});
+	});
+	return arr;
+};
+
+
+    </script>
+
+</body>
+</html>
